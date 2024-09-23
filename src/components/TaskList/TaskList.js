@@ -1,15 +1,21 @@
-import React from "react";
+import React from 'react';
 
-import "./TaskList.css";
+import './TaskList.css';
 
-import Tasks from "../Task/Task";
+import Tasks from '../Task/Task.js';
 
-const TaskList = ({ todos, condition }) => {
+const TaskList = ({ todos, onDeleted, onDone }) => {
   const elements = todos.map((item) => {
+    let { id } = item;
     return (
-      <li className={item.condition} key={item.id}>
-        <Tasks label={item.label} />
-      </li>
+      <Tasks
+        item={item}
+        onDeleted={() => onDeleted(id)}
+        onDone={() => {
+          onDone(id);
+        }}
+        key={id}
+      />
     );
   });
 
