@@ -33,13 +33,13 @@ export default class Task extends Component {
   render() {
     const { item, onDeleted, onDone } = this.props;
     const { done } = item;
-    const { dateCreate } = this.state;
+    const { dateCreate, label, editing } = this.state;
 
     let classNames = '';
 
     if (done) {
       classNames += 'completed';
-    } else if (this.state.editing) {
+    } else if (editing) {
       classNames += ' editing';
     }
 
@@ -49,7 +49,7 @@ export default class Task extends Component {
           <input className="toggle" type="checkbox" onClick={onDone} />
           <label>
             <span className="description" onClick={onDone}>
-              {this.state.label}
+              {label}
             </span>
             <span className="created">
               {`created ${formatDistanceToNow(dateCreate, {
@@ -60,7 +60,7 @@ export default class Task extends Component {
           <button
             className="icon icon-edit"
             onClick={() => {
-              this.onEdit(this.state.label);
+              this.onEdit(label);
             }}
           ></button>
           <button className="icon icon-destroy" onClick={onDeleted}></button>
@@ -70,3 +70,40 @@ export default class Task extends Component {
     );
   }
 }
+
+Task.defaultProps = {
+  item: {},
+  onDeleted: () => {},
+  onDone: () => {},
+};
+
+Task.propTypes = {
+  item: (props, propName, componentName) => {
+    const value = props[propName];
+
+    if (typeof value === 'object') {
+      return null;
+    }
+
+    return new Error(`${componentName}: ${propName} must be object`);
+  },
+  onDeleted: (props, propName, componentName) => {
+    const value = props[propName];
+
+    if (typeof value === 'function') {
+      return null;
+    }
+
+    return new Error(`${componentName}: ${propName} must be function`);
+  },
+
+  onDone: (props, propName, componentName) => {
+    const value = props[propName];
+
+    if (typeof value === 'function') {
+      return null;
+    }
+
+    return new Error(`${componentName}: ${propName} must be function`);
+  },
+};

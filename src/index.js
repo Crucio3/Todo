@@ -63,6 +63,7 @@ class TodoApp extends Component {
 
   getFiltered = () => {
     const { todoData, filter } = this.state;
+
     if (filter === 'Active') {
       return todoData.filter((item) => item.done === false);
     } else if (filter === 'Completed') {
@@ -82,8 +83,6 @@ class TodoApp extends Component {
       return { todoData: newData };
     });
   };
-
-  onEdit = () => {};
 
   render() {
     const filteredTodos = this.getFiltered();

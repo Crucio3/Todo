@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import './TasksFilter.css';
 
-class TasksFilter extends Component {
+export default class TasksFilter extends Component {
   render() {
     const { filter, swapFilter } = this.props;
     return (
@@ -42,4 +42,29 @@ class TasksFilter extends Component {
   }
 }
 
-export default TasksFilter;
+TasksFilter.defaultProps = {
+  filter: 'All',
+  swapFilter: () => {},
+};
+
+TasksFilter.propTypes = {
+  filter: (props, propName, componentName) => {
+    const value = props[propName];
+
+    if (typeof value === 'string') {
+      return null;
+    }
+
+    return new Error(`${componentName}: ${propName} must be string`);
+  },
+
+  swapFilter: (props, propName, componentName) => {
+    const value = props[propName];
+
+    if (typeof value === 'function') {
+      return null;
+    }
+
+    return new Error(`${componentName}: ${propName} must be function`);
+  },
+};

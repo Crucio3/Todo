@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import './NewTaskForm.css';
 
-class NewTaskForm extends Component {
+export default class NewTaskForm extends Component {
   state = {
     label: '',
   };
@@ -37,4 +37,18 @@ class NewTaskForm extends Component {
   }
 }
 
-export default NewTaskForm;
+NewTaskForm.defaultProps = {
+  addItem: () => {},
+};
+
+NewTaskForm.propTypes = {
+  addItem: (props, propName, componentName) => {
+    const value = props[propName];
+
+    if (typeof value === 'function') {
+      return null;
+    }
+
+    return new Error(`${componentName}: ${propName} must be function`);
+  },
+};
