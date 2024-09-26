@@ -8,9 +8,30 @@ export default class Task extends Component {
     label: this.props.item.label,
     editing: false,
     dateCreate: new Date(),
+    timeSinceCreated: '',
   };
 
   inputRef = React.createRef();
+
+  componentDidMount() {
+    this.intervalId = setInterval(() => {
+      this.updateTimeSinceCreated();
+    }, 1000);
+
+    this.updateTimeSinceCreated();
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.intervalId);
+  }
+
+  updateTimeSinceCreated() {
+    this.setState({
+      timeSinceCreated: formatDistanceToNow(this.state.dateCreate, {
+        includeSeconds: true,
+      }),
+    });
+  }
 
   onEdit = (text) => {
     this.setState(
@@ -33,7 +54,7 @@ export default class Task extends Component {
   render() {
     const { item, onDeleted, onDone } = this.props;
     const { done } = item;
-    const { dateCreate, label, editing } = this.state;
+    const { label, editing, timeSinceCreated } = this.state;
 
     let classNames = '';
 
@@ -46,16 +67,12 @@ export default class Task extends Component {
     return (
       <li className={classNames}>
         <div className="view">
-          <input className="toggle" type="checkbox" onClick={onDone} />
+          <input className="toggle" type="checkbox" checked={done} onChange={onDone} />
           <label>
             <span className="description" onClick={onDone}>
               {label}
             </span>
-            <span className="created">
-              {`created ${formatDistanceToNow(dateCreate, {
-                includeSeconds: true,
-              })}`}
-            </span>
+            <span className="created">{`created ${timeSinceCreated}`}</span>
           </label>
           <button
             className="icon icon-edit"
@@ -96,7 +113,6 @@ Task.propTypes = {
 
     return new Error(`${componentName}: ${propName} must be function`);
   },
-
   onDone: (props, propName, componentName) => {
     const value = props[propName];
 

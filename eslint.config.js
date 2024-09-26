@@ -13,6 +13,8 @@ export default [
         test: 'readonly',
         expect: 'readonly',
         document: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
       },
       parserOptions: {
         ecmaFeatures: {
