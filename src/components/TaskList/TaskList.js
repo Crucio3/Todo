@@ -4,7 +4,7 @@ import './TaskList.css';
 
 import Tasks from '../Task/Task.js';
 
-const TaskList = ({ todos = [], onDeleted = () => {}, onDone = () => {} }) => {
+const TaskList = ({ todos = [], onDeleted = () => {}, onDone = () => {}, onTimer, offTimer, timer }) => {
   const elements = todos.map((item) => {
     let { id } = item;
     return (
@@ -15,6 +15,15 @@ const TaskList = ({ todos = [], onDeleted = () => {}, onDone = () => {} }) => {
           onDone(id);
         }}
         key={id}
+        onTimer={() => {
+          onTimer(id);
+        }}
+        offTimer={() => {
+          offTimer(id);
+        }}
+        timer={() => {
+          timer(id);
+        }}
       />
     );
   });

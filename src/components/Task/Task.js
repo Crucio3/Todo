@@ -9,20 +9,23 @@ export default class Task extends Component {
     editing: false,
     dateCreate: new Date(),
     timeSinceCreated: '',
+    countingDown: this.props.item.countingDown,
   };
+
+  intervalIdOne = null;
+  intervalIdTwo = null;
 
   inputRef = React.createRef();
 
   componentDidMount() {
-    this.intervalId = setInterval(() => {
+    this.intervalIdOne = setInterval(() => {
       this.updateTimeSinceCreated();
     }, 1000);
-
-    this.updateTimeSinceCreated();
   }
 
   componentWillUnmount() {
-    clearInterval(this.intervalId);
+    clearInterval(this.intervalIdOne);
+    clearInterval(this.intervalIdTwo);
   }
 
   updateTimeSinceCreated() {
@@ -45,8 +48,9 @@ export default class Task extends Component {
 
   pressKey = (e) => {
     if (e.code === 'Enter' && this.inputRef.current.value !== '') {
-      this.setState(() => {
-        return { label: this.inputRef.current.value, editing: false };
+      this.setState({
+        label: this.inputRef.current.value,
+        editing: false,
       });
     }
   };
@@ -69,10 +73,25 @@ export default class Task extends Component {
         <div className="view">
           <input className="toggle" type="checkbox" checked={done} onChange={onDone} />
           <label>
-            <span className="description" onClick={onDone}>
+            <span className="title" onClick={onDone}>
               {label}
             </span>
-            <span className="created">{`created ${timeSinceCreated}`}</span>
+            <span className="description">
+              <button
+                className="icon icon-play"
+                onClick={() => {
+                  this.props.onTimer();
+                }}
+              ></button>
+              <button
+                className="icon icon-pause"
+                onClick={() => {
+                  this.props.offTimer();
+                }}
+              ></button>
+              {this.props.item.minutes}:{this.props.item.seconds}
+            </span>
+            <span className="description">{`created ${timeSinceCreated}`}</span>
           </label>
           <button
             className="icon icon-edit"
@@ -102,7 +121,7 @@ Task.propTypes = {
       return null;
     }
 
-    return new Error(`${componentName}: ${propName} must be object`);
+    return new Error(`${componentName}: ${propName} must be an object`);
   },
   onDeleted: (props, propName, componentName) => {
     const value = props[propName];
@@ -111,7 +130,7 @@ Task.propTypes = {
       return null;
     }
 
-    return new Error(`${componentName}: ${propName} must be function`);
+    return new Error(`${componentName}: ${propName} must be a function`);
   },
   onDone: (props, propName, componentName) => {
     const value = props[propName];
@@ -120,6 +139,6 @@ Task.propTypes = {
       return null;
     }
 
-    return new Error(`${componentName}: ${propName} must be function`);
+    return new Error(`${componentName}: ${propName} must be a function`);
   },
 };
