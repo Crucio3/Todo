@@ -19,20 +19,27 @@ class TodoApp extends Component {
   itemsLeft = 0;
 
   deleteItem = (id) => {
-    this.itemsLeft -= 1;
+    const item = this.state.todoData.find((item) => item.id === id);
+    if (!item.done) {
+      this.itemsLeft -= 1;
+    }
+
     this.setState(({ todoData }) => {
       let newState = todoData.filter((item) => item.id !== id);
       return { todoData: newState };
     });
   };
 
-  addItem = (text) => {
+  addItem = (text, min, sec) => {
     this.setState(({ todoData }) => {
       let newObj = {
         label: text,
         id: this.id++,
         done: false,
         edit: false,
+        minutes: min,
+        seconds: sec,
+        countingDown: false,
       };
 
       this.itemsLeft += 1;
@@ -55,6 +62,8 @@ class TodoApp extends Component {
       }
 
       newItem.done = !newItem.done;
+      newItem.minutes = 0;
+      newItem.seconds = 0;
       let newState = todoData.toSpliced(idx, 1, newItem);
 
       return { todoData: newState };
@@ -84,13 +93,59 @@ class TodoApp extends Component {
     });
   };
 
+  timer = () => {
+    this.setState(({ todoData }) => {
+      const newTodoData = todoData.map((item) => {
+        if (item.countingDown) {
+          if (item.seconds > 0) {
+            return { ...item, seconds: item.seconds - 1 };
+          } else if (item.minutes > 0) {
+            return { ...item, seconds: 59, minutes: item.minutes - 1 };
+          } else {
+            return { ...item, countingDown: false };
+          }
+        }
+        return item;
+      });
+
+      return { todoData: newTodoData };
+    });
+  };
+
+  componentDidMount() {
+    this.intervalId = setInterval(this.timer, 1000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.intervalId);
+  }
+
+  onTimer = (id) => {
+    this.setState(({ todoData }) => ({
+      todoData: todoData.map((item) => (item.id === id ? { ...item, countingDown: true } : item)),
+    }));
+  };
+
+  offTimer = (id) => {
+    this.setState(({ todoData }) => ({
+      todoData: todoData.map((item) => (item.id === id ? { ...item, countingDown: false } : item)),
+    }));
+  };
+
   render() {
     const filteredTodos = this.getFiltered();
 
     return (
       <div className="todoapp">
         <NewTaskForm addItem={this.addItem} />
-        <TaskList todos={filteredTodos} onDeleted={this.deleteItem} onDone={this.doneItem} />
+        <TaskList
+          todos={filteredTodos}
+          onDeleted={this.deleteItem}
+          onDone={this.doneItem}
+          onTimer={this.onTimer}
+          offTimer={this.offTimer}
+          timer={this.timer}
+        />
         <Footer
           itemsLeft={this.itemsLeft}
           deleteCompleted={this.deleteCompleted}
