@@ -15,7 +15,7 @@ class TodoApp extends Component {
     filter: 'All',
   };
 
-  id = 100;
+  id = 10;
   itemsLeft = 0;
 
   deleteItem = (id) => {
