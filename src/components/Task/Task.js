@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { formatDistanceToNow } from 'date-fns';
 
 import './Task.css';
 
@@ -7,34 +6,10 @@ export default class Task extends Component {
   state = {
     label: this.props.item.label,
     editing: false,
-    dateCreate: new Date(),
-    timeSinceCreated: '',
     countingDown: this.props.item.countingDown,
   };
 
-  intervalIdOne = null;
-  intervalIdTwo = null;
-
   inputRef = React.createRef();
-
-  componentDidMount() {
-    this.intervalIdOne = setInterval(() => {
-      this.updateTimeSinceCreated();
-    }, 1000);
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.intervalIdOne);
-    clearInterval(this.intervalIdTwo);
-  }
-
-  updateTimeSinceCreated() {
-    this.setState({
-      timeSinceCreated: formatDistanceToNow(this.state.dateCreate, {
-        includeSeconds: true,
-      }),
-    });
-  }
 
   onEdit = (text) => {
     this.setState(
@@ -58,7 +33,7 @@ export default class Task extends Component {
   render() {
     const { item, onDeleted, onDone } = this.props;
     const { done } = item;
-    const { label, editing, timeSinceCreated } = this.state;
+    const { label, editing } = this.state;
 
     let classNames = '';
 
@@ -89,9 +64,9 @@ export default class Task extends Component {
                   this.props.offTimer();
                 }}
               ></button>
-              {this.props.item.minutes}:{this.props.item.seconds}
+              {item.minutes}:{item.seconds}
             </span>
-            <span className="description">{`created ${timeSinceCreated}`}</span>
+            <span className="description">{`created ${item.timeSinceCreated}`}</span>
           </label>
           <button
             className="icon icon-edit"
