@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { formatDistanceToNow } from 'date-fns';
 
 import './Task.css';
 
@@ -7,31 +6,10 @@ export default class Task extends Component {
   state = {
     label: this.props.item.label,
     editing: false,
-    dateCreate: new Date(),
-    timeSinceCreated: '',
+    countingDown: this.props.item.countingDown,
   };
 
   inputRef = React.createRef();
-
-  componentDidMount() {
-    this.intervalId = setInterval(() => {
-      this.updateTimeSinceCreated();
-    }, 1000);
-
-    this.updateTimeSinceCreated();
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.intervalId);
-  }
-
-  updateTimeSinceCreated() {
-    this.setState({
-      timeSinceCreated: formatDistanceToNow(this.state.dateCreate, {
-        includeSeconds: true,
-      }),
-    });
-  }
 
   onEdit = (text) => {
     this.setState(
@@ -45,8 +23,9 @@ export default class Task extends Component {
 
   pressKey = (e) => {
     if (e.code === 'Enter' && this.inputRef.current.value !== '') {
-      this.setState(() => {
-        return { label: this.inputRef.current.value, editing: false };
+      this.setState({
+        label: this.inputRef.current.value,
+        editing: false,
       });
     }
   };
@@ -54,7 +33,7 @@ export default class Task extends Component {
   render() {
     const { item, onDeleted, onDone } = this.props;
     const { done } = item;
-    const { label, editing, timeSinceCreated } = this.state;
+    const { label, editing } = this.state;
 
     let classNames = '';
 
@@ -69,10 +48,25 @@ export default class Task extends Component {
         <div className="view">
           <input className="toggle" type="checkbox" checked={done} onChange={onDone} />
           <label>
-            <span className="description" onClick={onDone}>
+            <span className="title" onClick={onDone}>
               {label}
             </span>
-            <span className="created">{`created ${timeSinceCreated}`}</span>
+            <span className="description">
+              <button
+                className="icon icon-play"
+                onClick={() => {
+                  this.props.onTimer();
+                }}
+              ></button>
+              <button
+                className="icon icon-pause"
+                onClick={() => {
+                  this.props.offTimer();
+                }}
+              ></button>
+              {item.minutes}:{item.seconds}
+            </span>
+            <span className="description">{`created ${item.timeSinceCreated}`}</span>
           </label>
           <button
             className="icon icon-edit"
@@ -102,7 +96,7 @@ Task.propTypes = {
       return null;
     }
 
-    return new Error(`${componentName}: ${propName} must be object`);
+    return new Error(`${componentName}: ${propName} must be an object`);
   },
   onDeleted: (props, propName, componentName) => {
     const value = props[propName];
@@ -111,7 +105,7 @@ Task.propTypes = {
       return null;
     }
 
-    return new Error(`${componentName}: ${propName} must be function`);
+    return new Error(`${componentName}: ${propName} must be a function`);
   },
   onDone: (props, propName, componentName) => {
     const value = props[propName];
@@ -120,6 +114,6 @@ Task.propTypes = {
       return null;
     }
 
-    return new Error(`${componentName}: ${propName} must be function`);
+    return new Error(`${componentName}: ${propName} must be a function`);
   },
 };

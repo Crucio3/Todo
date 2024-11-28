@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom/client';
+import { formatDistanceToNow } from 'date-fns';
 
 import './index.css';
 
@@ -15,30 +16,67 @@ class TodoApp extends Component {
     filter: 'All',
   };
 
-  id = 100;
+  id = 10;
   itemsLeft = 0;
 
   deleteItem = (id) => {
-    this.itemsLeft -= 1;
+    const item = this.state.todoData.find((item) => item.id === id);
+    if (!item.done) {
+      this.itemsLeft -= 1;
+    }
+
     this.setState(({ todoData }) => {
       let newState = todoData.filter((item) => item.id !== id);
       return { todoData: newState };
     });
   };
 
-  addItem = (text) => {
+  addItem = (text, min, sec) => {
     this.setState(({ todoData }) => {
       let newObj = {
         label: text,
         id: this.id++,
         done: false,
         edit: false,
+        minutes: min,
+        seconds: sec,
+        countingDown: false,
+        dateCreate: new Date(),
+        timeSinceCreated: '',
       };
 
       this.itemsLeft += 1;
 
       let newArr = [...todoData, newObj];
       return { todoData: newArr };
+    });
+  };
+
+  updateTimeSinceCreated = () => {
+    this.setState(({ todoData }) => {
+      const newTodoData = todoData.map((item) => {
+        item.timeSinceCreated = formatDistanceToNow(item.dateCreate, { includeSeconds: true });
+        return item;
+      });
+      return { todoData: newTodoData };
+    });
+  };
+
+  timer = () => {
+    this.setState(({ todoData }) => {
+      const newTodoData = todoData.map((item) => {
+        if (item.countingDown) {
+          if (item.seconds > 0) {
+            return { ...item, seconds: item.seconds - 1 };
+          } else if (item.minutes > 0) {
+            return { ...item, seconds: 59, minutes: item.minutes - 1 };
+          } else {
+            return { ...item, countingDown: false };
+          }
+        }
+        return item;
+      });
+      return { todoData: newTodoData };
     });
   };
 
@@ -55,6 +93,8 @@ class TodoApp extends Component {
       }
 
       newItem.done = !newItem.done;
+      newItem.minutes = 0;
+      newItem.seconds = 0;
       let newState = todoData.toSpliced(idx, 1, newItem);
 
       return { todoData: newState };
@@ -84,13 +124,42 @@ class TodoApp extends Component {
     });
   };
 
+  componentDidMount() {
+    this.intervalId1 = setInterval(this.timer, 1000);
+    this.intervalId2 = setInterval(this.updateTimeSinceCreated, 1000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.intervalId1);
+    clearInterval(this.intervalId2);
+  }
+
+  onTimer = (id) => {
+    this.setState(({ todoData }) => ({
+      todoData: todoData.map((item) => (item.id === id ? { ...item, countingDown: true } : item)),
+    }));
+  };
+
+  offTimer = (id) => {
+    this.setState(({ todoData }) => ({
+      todoData: todoData.map((item) => (item.id === id ? { ...item, countingDown: false } : item)),
+    }));
+  };
+
   render() {
     const filteredTodos = this.getFiltered();
 
     return (
       <div className="todoapp">
         <NewTaskForm addItem={this.addItem} />
-        <TaskList todos={filteredTodos} onDeleted={this.deleteItem} onDone={this.doneItem} />
+        <TaskList
+          todos={filteredTodos}
+          onDeleted={this.deleteItem}
+          onDone={this.doneItem}
+          onTimer={this.onTimer}
+          offTimer={this.offTimer}
+          timer={this.timer}
+        />
         <Footer
           itemsLeft={this.itemsLeft}
           deleteCompleted={this.deleteCompleted}
