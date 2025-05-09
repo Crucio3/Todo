@@ -1,54 +1,84 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 
 import './NewTaskForm.css';
 
-export default class NewTaskForm extends Component {
-  state = {
-    label: '',
-  };
+const NewTaskForm = ({ addItem }) => {
+  const [label, setLabel] = useState('');
+  const [minutes, setMinutes] = useState('');
+  const [seconds, setSeconds] = useState('');
 
-  inputRef = React.createRef();
-
-  pressKey = (e) => {
-    const { addItem } = this.props;
-    const inputValue = this.inputRef.current.value;
-    this.setState(({ label }) => {
-      return { label: label + inputValue };
-    });
-    if (e.code === 'Enter' && inputValue !== '') {
-      addItem(inputValue);
-      this.inputRef.current.value = '';
+  const pressKey = (e) => {
+    if (e.code === 'Enter' && label !== '') {
+      addItem(label, minutes, seconds);
+      setLabel('');
+      setMinutes('');
+      setSeconds('');
     }
   };
 
-  render() {
-    return (
-      <header className="header">
-        <h1>todos</h1>
+  const changeState = (e) => {
+    const { name, value } = e.target;
+    if (name === 'label') {
+      setLabel(value);
+    } else if (name === 'seconds') {
+      setSeconds(value);
+    } else if (name === 'minutes') {
+      setMinutes(value);
+    }
+  };
+
+  return (
+    <header className="header">
+      <h1>todos</h1>
+      <form className="new-todo-form">
         <input
           className="new-todo"
-          placeholder="What needs to be done?"
+          placeholder="Task"
           autoFocus
-          ref={this.inputRef}
-          onKeyDown={this.pressKey}
+          onKeyDown={pressKey}
+          name="label"
+          onChange={changeState}
+          value={label}
         />
-      </header>
-    );
-  }
-}
-
-NewTaskForm.defaultProps = {
-  addItem: () => {},
+        <input
+          className="new-todo-form__timer"
+          placeholder="Min"
+          name="minutes"
+          onKeyDown={pressKey}
+          onChange={changeState}
+          value={minutes}
+          onInput={(e) => {
+            const value = e.target.value;
+            let newValue = '';
+            for (let i = 0; i < value.length; i++) {
+              if (!isNaN(value[i]) && value[i] !== ' ') {
+                newValue += value[i];
+              }
+            }
+            e.target.value = newValue;
+          }}
+        />
+        <input
+          className="new-todo-form__timer"
+          placeholder="Sec"
+          name="seconds"
+          onKeyDown={pressKey}
+          onChange={changeState}
+          value={seconds}
+          onInput={(e) => {
+            const value = e.target.value;
+            let newValue = '';
+            for (let i = 0; i < value.length; i++) {
+              if (!isNaN(value[i]) && value[i] !== ' ') {
+                newValue += value[i];
+              }
+            }
+            e.target.value = newValue;
+          }}
+        />
+      </form>
+    </header>
+  );
 };
 
-NewTaskForm.propTypes = {
-  addItem: (props, propName, componentName) => {
-    const value = props[propName];
-
-    if (typeof value === 'function') {
-      return null;
-    }
-
-    return new Error(`${componentName}: ${propName} must be function`);
-  },
-};
+export default NewTaskForm;

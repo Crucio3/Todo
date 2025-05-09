@@ -1,125 +1,70 @@
-import React, { Component } from 'react';
-import { formatDistanceToNow } from 'date-fns';
+import React, { useState, useRef } from 'react';
 
 import './Task.css';
 
-export default class Task extends Component {
-  state = {
-    label: this.props.item.label,
-    editing: false,
-    dateCreate: new Date(),
-    timeSinceCreated: '',
-  };
+const Task = ({ item, onDeleted, onDone, offTimer, onTimer }) => {
+  const inputRef = useRef(null);
 
-  inputRef = React.createRef();
+  const [label, setLabel] = useState(item.label);
+  const [editing, setEditing] = useState(false);
 
-  componentDidMount() {
-    this.intervalId = setInterval(() => {
-      this.updateTimeSinceCreated();
-    }, 1000);
+  let classNames = '';
 
-    this.updateTimeSinceCreated();
+  if (item.done) {
+    classNames += 'completed';
+  } else if (editing) {
+    classNames += ' editing';
   }
 
-  componentWillUnmount() {
-    clearInterval(this.intervalId);
-  }
-
-  updateTimeSinceCreated() {
-    this.setState({
-      timeSinceCreated: formatDistanceToNow(this.state.dateCreate, {
-        includeSeconds: true,
-      }),
-    });
-  }
-
-  onEdit = (text) => {
-    this.setState(
-      ({ editing }) => ({ editing: !editing }),
-      () => {
-        this.inputRef.current.value = text;
-        this.inputRef.current.focus();
-      }
-    );
-  };
-
-  pressKey = (e) => {
-    if (e.code === 'Enter' && this.inputRef.current.value !== '') {
-      this.setState(() => {
-        return { label: this.inputRef.current.value, editing: false };
-      });
+  const pressKey = (e) => {
+    if (e.code === 'Enter' && inputRef.current.value !== '') {
+      setLabel(inputRef.current.value);
+      setEditing(false);
     }
   };
 
-  render() {
-    const { item, onDeleted, onDone } = this.props;
-    const { done } = item;
-    const { label, editing, timeSinceCreated } = this.state;
+  const onEdit = (text) => {
+    setEditing((editing) => !editing);
+    inputRef.current.value = text;
+    inputRef.current.focus();
+  };
 
-    let classNames = '';
-
-    if (done) {
-      classNames += 'completed';
-    } else if (editing) {
-      classNames += ' editing';
-    }
-
-    return (
-      <li className={classNames}>
-        <div className="view">
-          <input className="toggle" type="checkbox" checked={done} onChange={onDone} />
-          <label>
-            <span className="description" onClick={onDone}>
-              {label}
-            </span>
-            <span className="created">{`created ${timeSinceCreated}`}</span>
-          </label>
-          <button
-            className="icon icon-edit"
-            onClick={() => {
-              this.onEdit(label);
-            }}
-          ></button>
-          <button className="icon icon-destroy" onClick={onDeleted}></button>
-        </div>
-        <input type="text" className="edit" ref={this.inputRef} onKeyDown={this.pressKey} />
-      </li>
-    );
-  }
-}
-
-Task.defaultProps = {
-  item: {},
-  onDeleted: () => {},
-  onDone: () => {},
+  return (
+    <li className={classNames}>
+      <div className="view">
+        <input className="toggle" type="checkbox" checked={item.done} onChange={onDone} />
+        <label>
+          <span className="title" onClick={onDone}>
+            {label}
+          </span>
+          <span className="description">
+            <button
+              className="icon icon-play"
+              onClick={() => {
+                onTimer();
+              }}
+            ></button>
+            <button
+              className="icon icon-pause"
+              onClick={() => {
+                offTimer();
+              }}
+            ></button>
+            {item.minutes}:{item.seconds}
+          </span>
+          <span className="description">{`created ${item.timeSinceCreated}`}</span>
+        </label>
+        <button
+          className="icon icon-edit"
+          onClick={() => {
+            onEdit(label);
+          }}
+        ></button>
+        <button className="icon icon-destroy" onClick={onDeleted}></button>
+      </div>
+      <input type="text" className="edit" ref={inputRef} onKeyDown={pressKey} />
+    </li>
+  );
 };
 
-Task.propTypes = {
-  item: (props, propName, componentName) => {
-    const value = props[propName];
-
-    if (typeof value === 'object') {
-      return null;
-    }
-
-    return new Error(`${componentName}: ${propName} must be object`);
-  },
-  onDeleted: (props, propName, componentName) => {
-    const value = props[propName];
-
-    if (typeof value === 'function') {
-      return null;
-    }
-
-    return new Error(`${componentName}: ${propName} must be function`);
-  },
-  onDone: (props, propName, componentName) => {
-    const value = props[propName];
-
-    if (typeof value === 'function') {
-      return null;
-    }
-
-    return new Error(`${componentName}: ${propName} must be function`);
-  },
-};
+export default Task;
